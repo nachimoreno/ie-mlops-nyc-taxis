@@ -22,3 +22,7 @@ mlartifacts/
 .idea/
 *.DS_Store
 .pytest_cache/
+
+*.png
+*.db
+*.csv
