@@ -1,9 +1,20 @@
 import os
 import subprocess
 import sys
+import tomli as tomllib
 from pathlib import Path
 
+def get_config() -> dict:
+    with open("config.toml", "rb") as f:
+        return tomllib.load(f)
+
 def main() -> int:
+    config = get_config()
+    host = config["mlflow"]["host"]
+    port = config["mlflow"]["port"]
+    url = config["mlflow"]["url"]
+    allowed_hosts = config["mlflow"]["allowed_hosts"]
+
     project_root = Path(__file__).resolve().parent
     mlflow_data_directory = project_root / "mlflow_data"
     backend_store_path = mlflow_data_directory / "mlflow.db"
@@ -16,9 +27,9 @@ def main() -> int:
         sys.executable, "-m", "mlflow", "server",
         "--backend-store-uri", f"sqlite:///{backend_store_path.as_posix()}",
         "--default-artifact-root", artifact_root_path.as_posix(),
-        "--host", "0.0.0.0",
-        "--port", "9999",
-        "--allowed-hosts", "localhost:*,0.0.0.0:*,127.0.0.1:*"
+        "--host", host,
+        "--port", port,
+        "--allowed-hosts", allowed_hosts
     ]
 
     print("Starting MLflow server:")
@@ -31,7 +42,7 @@ def main() -> int:
 
     process = subprocess.Popen(command, cwd=str(project_root), creationflags=creationflags)
     print(f"MLflow PID: {process.pid}")
-    print("Open: http://127.0.0.1:9999")
+    print(f"Open: {url}")
 
     # Wait so Ctrl+C stops it cleanly
     try:
